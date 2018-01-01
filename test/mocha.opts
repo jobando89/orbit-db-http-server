@@ -1,4 +1,3 @@
 --reporter spec
---colors
 --recursive
---exit
+--require test/setup.js

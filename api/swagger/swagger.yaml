@@ -1,0 +1,181 @@
+swagger: "2.0"
+info:
+  version: "0.0.1"
+  title: Orbit DB API
+basePath: /
+schemes:
+  - https
+consumes:
+  - application/json
+  - multipart/form-data
+produces:
+  - application/json
+  - multipart/form-data
+
+paths:
+  /:
+    x-swagger-router-controller: about
+    get:
+      tags:
+        - Hide
+      summary: / Site
+      description: Returns service name and version
+      responses:
+        "200":
+          description: Success
+          schema:
+            properties:
+              name:
+                type: string
+              version:
+                type: string
+
+  /orbitdb/{multihash}/{name}:
+    x-swagger-router-controller: database
+    parameters:
+      - name: multihash
+        type: string
+        in: path
+        required: true
+      - name: name
+        type: string
+        in: path
+        required: true
+    get:
+      tags:
+        - Get
+      summary: Gets iterators or value for OrbitDB data stores of type Log, Feed and Counter
+      operationId: get
+      responses:
+        204:
+          description: Success
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/error"
+    post:
+      tags:
+        - Add
+      summary: Saves values to OrbitDB data stores of type Log, Feed and Counter
+      operationId: add
+      parameters:
+        - name: value
+          type: integer
+          in: query
+          required: false
+      responses:
+        201:
+          description: Success
+          schema:
+            type: string
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/error"
+
+  /orbitdb/{multihash}/{name}/{key}:
+    x-swagger-router-controller: database
+    parameters:
+      - name: multihash
+        type: string
+        in: path
+        required: true
+      - name: name
+        type: string
+        in: path
+        required: true
+      - name: key
+        description: key, id or hash for db value.
+        type: string
+        required: true
+        in: path
+    get:
+      tags:
+        - Get
+      summary: Gets value for hash or key of data stores of type KeyValue, Log, Docs and Feed
+      operationId: getByKey
+      responses:
+        204:
+          description: Success
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/error"
+    post:
+      tags:
+        - Add
+      summary: Saves values to OrbitDB data stores of type KeyValue
+      operationId: addKeyValue
+      responses:
+        201:
+          description: Success
+          schema:
+            type: string
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/error"
+
+  /orbitdb:
+    x-swagger-router-controller: database
+    post:
+      parameters:
+        - name: type
+          description: Database type.
+          in: query
+          required: true
+          type: string
+          enum:
+            - keyvalue
+            - eventlog
+            - feed
+            - docstore
+            - counter
+        - name: name
+          description: Database name.
+          type: string
+          in: query
+          required: true
+        - name: indexBy
+          description: Index value.
+          type: string
+          in: query
+          required: false
+      tags:
+        - OrbitDb
+      summary: Create a database
+      description: Creates an OrbitDB database.
+      operationId: create
+      responses:
+        201:
+          description: Success
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/error"
+
+definitions:
+  validString:
+    description: A valid string
+    type: string
+    pattern: (^$|\S)
+
+  requiredValidString:
+    description: A valid string
+    type: string
+    pattern: (^$|\S)
+    minLength: 1
+
+  error:
+    description: Error response object
+    properties:
+      message:
+        description: User facing error message
+        type: string
+      internalMessage:
+        description: Internal message for logging and troubleshooting
+        type: string
+      code:
+        description: Error code
+        type: integer
+        format: int32

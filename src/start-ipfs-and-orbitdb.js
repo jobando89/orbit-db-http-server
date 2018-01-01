@@ -1,16 +1,16 @@
 const path = require('path')
 const IPFS = require('ipfs')
 const OrbitDB = require('orbit-db')
-
+const {get} = require('lodash');
 const Logger = require('logplease')
 const logger = Logger.create("orbit-db-http-server", { color: Logger.Colors.Yellow })
 Logger.setLogLevel('ERROR')
 
 const defaultDataDir = './orbitdb'
 
-const startIpfsAndOrbitDB = async (options) => {
-  logger.debug("IPFS path:", options.ipfsPath)
-  logger.debug("OrbitDB path:", options.orbitdbPath)
+const startIpfsAndOrbitDB = async (options={}) => {
+  logger.debug("IPFS path:", get(options,'ipfsPath'))
+  logger.debug("OrbitDB path:", get(options,'orbitdbPath'))
   return new Promise((resolve, reject) => {
     logger.debug("Starting IPFS")
     const ipfs = new IPFS({
