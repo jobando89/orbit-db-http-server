@@ -13,19 +13,30 @@ const validateDbType = (db, acceptedTypes) => {
 module.exports = {
 
     get: Wrapper.wrap(async helper => {
+
         const address = helper.req.dbAddress;
 
-        // Get params on how we should output the results
-        const shouldStream = get(helper, 'req.query.live', false);
-
-        // Set the limit on how many entries we should return in the result
-        const limit = get(helper, 'req.query.limit', -1);
+        //Setting up options
+        const gt = helper.req.getParam('gt');
+        const gte = helper.req.getParam('gte');
+        const lt = helper.req.getParam('lt');
+        const lte = helper.req.getParam('lte');
+        const limit = helper.req.getParam('limit', -1);
+        const reverse = helper.req.getParam('reverse', false);
+        const iteratorOptions = {
+            gt,
+            gte,
+            lt,
+            lte,
+            limit,
+            reverse,
+        };
 
         // Open the requested database
         const db = await helper.orbitdb.open(address, {
             create: false,
             sync: true,
-            localOnly: !shouldStream,
+            //localOnly: !shouldStream, TODO WHAT IS THIS?
         });
 
         // Load the database
@@ -33,9 +44,18 @@ module.exports = {
 
         validateDbType(db, ['log', 'feed', 'counter']);
 
-        const query = () => db.iterator({limit: limit}).collect();
+        let result;
+        switch (db.type) {
+            case 'counter':
+                result = db.value;
+                break;
+            default:
+                result = db.iterator(iteratorOptions).collect();
+                break;
+        }
 
-        return helper.reply.ok(query());
+        //Return results
+        return helper.reply.ok(result);
     }),
 
     create: Wrapper.wrap(async helper => {

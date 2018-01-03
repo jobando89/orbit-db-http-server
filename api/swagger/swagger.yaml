@@ -46,6 +46,37 @@ paths:
         - Get
       summary: Gets iterators or value for OrbitDB data stores of type Log, Feed and Counter
       operationId: get
+      parameters:
+        - name: gt
+          description: Greater than
+          type: string
+          in: query
+          required: false
+        - name: gte
+          description: Greater than or equal to
+          type: string
+          in: query
+          required: false
+        - name: lte
+          description: Less than or equal to
+          type: string
+          in: query
+          required: false
+        - name: lt
+          description: Less than
+          type: string
+          in: query
+          required: false
+        - name: limit
+          description: Limiting the entries of result
+          type: integer
+          in: query
+          required: false
+        - name: reverse
+          description: If set to true will result in reversing the result
+          type: boolean
+          in: query
+          required: false
       responses:
         204:
           description: Success

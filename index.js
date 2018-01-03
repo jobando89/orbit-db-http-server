@@ -25,7 +25,7 @@ async function create() {
                 name: '',
                 version: '0.0',
                 appRoot: __dirname,
-                port: 9091
+                port: 37373
             },
         }
     };
