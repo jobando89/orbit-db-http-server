@@ -120,6 +120,7 @@ paths:
         type: string
         required: true
         in: path
+
     get:
       tags:
         - Get
@@ -132,6 +133,22 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/error"
+
+    delete:
+      tags:
+        - Delete
+      summary: Deletes values from OrbitDB data stores by KeyValue
+      operationId: deleteKeyValue
+      responses:
+        200:
+          description: Success
+          schema:
+            type: string
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/error"
+
     post:
       tags:
         - Add

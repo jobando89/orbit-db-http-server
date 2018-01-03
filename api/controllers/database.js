@@ -1,3 +1,5 @@
+//TODO how to add query for docs on get
+
 const Wrapper = require('../../src/wrapper');
 const {get} = require('lodash');
 
@@ -180,5 +182,19 @@ module.exports = {
         const event = db.get(key);
 
         helper.reply.ok(event);
-    })
+    }),
+
+    deleteKeyValue: Wrapper.wrap(async helper =>{
+
+        const address = helper.req.dbAddress;
+
+        const db = await helper.orbitdb.open(address, {
+            create: false,
+            sync: false,
+        });
+
+        await db.load();
+        
+        validateDbType(db, ['feed', 'docstore']);
+    }),
 };
