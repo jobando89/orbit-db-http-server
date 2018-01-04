@@ -184,8 +184,9 @@ module.exports = {
         helper.reply.ok(event);
     }),
 
-    deleteKeyValue: Wrapper.wrap(async helper =>{
+    deleteKeyValue: Wrapper.wrap(async helper => {
 
+        const key = helper.req.getParam('key');
         const address = helper.req.dbAddress;
 
         const db = await helper.orbitdb.open(address, {
@@ -194,7 +195,20 @@ module.exports = {
         });
 
         await db.load();
-        
+
         validateDbType(db, ['feed', 'docstore']);
+
+        const dbType = db.type;
+
+        switch (dbType) {
+            case 'feed':
+                await db.remove(key);
+                break;
+            case 'docstore':
+                await db.del(key);
+                break;
+        }
+
+        return helper.reply.ok();
     }),
 };
