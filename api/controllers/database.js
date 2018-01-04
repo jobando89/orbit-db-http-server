@@ -1,5 +1,4 @@
 //TODO how to add query for docs on get
-
 const Wrapper = require('../../src/wrapper');
 const {get} = require('lodash');
 
@@ -61,25 +60,25 @@ module.exports = {
     }),
 
     create: Wrapper.wrap(async helper => {
-        // Get the name and type from the request
+        // Get the name and type from the request as well as any properties needed to instantiate the db
         const type = helper.req.getParam('type');
         const name = helper.req.getParam('name');
-        const indexBy = helper.req.getParam('indexBy');
+        const properties = helper.req.getParam('properties');
 
-
-        let properties = {write: ['*']};
-
-        if (type === 'docstore' && indexBy) {
-            properties = {
-                ...properties,
-                indexBy
-            };
-        }
+        let dbProps = {//TODO handle case where creation of db does not include self
+            ...properties ? properties : {},
+            write: [get(properties, 'write', [helper.orbitdb.key.getPublic('hex')])]
+        };
 
         // Create the database
-        const db = await helper.req.orbitdb.create(name, type, properties);
+        let db;
+        if(type){
+            db = await helper.req.orbitdb.create(name, type, dbProps);
+        }else{ //Case when a replication is needed
+            db = await helper.req.orbitdb.create(name);
+        }
 
-        helper.reply.created(db.address.toString());
+        return helper.reply.created(db.address.toString());
     }),
 
     add: Wrapper.wrap(async helper => {
@@ -98,11 +97,11 @@ module.exports = {
         let result;
         const dbType = db.type;
         let data;
-        const type = helper.req.getParam('value');
+        const value = helper.req.getParam('value');
         switch (dbType) {
             case 'counter':
-                if (type) {
-                    result = await db.inc(type);
+                if (value) {
+                    result = await db.inc(value);
 
                 } else {
                     result = await db.inc();
