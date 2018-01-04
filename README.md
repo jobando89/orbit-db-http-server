@@ -20,3 +20,13 @@ npm start
 ```
 npm test
 ```
+
+## Lint
+```
+npm run lint
+```
+## Code Coverage
+```
+
+npm run cover
+```
