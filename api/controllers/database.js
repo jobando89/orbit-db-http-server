@@ -73,9 +73,9 @@ module.exports = {
         // Create the database
         let db;
         if(type){
-            db = await helper.req.orbitdb.create(name, type, dbProps);
+            db = await helper.orbitdb.create(name, type, dbProps);
         }else{ //Case when a replication is needed
-            db = await helper.req.orbitdb.create(name);
+            db = await helper.orbitdb.create(name);
         }
 
         return helper.reply.created(db.address.toString());

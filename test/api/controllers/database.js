@@ -258,6 +258,39 @@ describe('controllers/database', function () {
         }
 
         describe('keyvalue', function () {
+
+            it('should create a database with the parameters assigned', async function () {
+
+                set(helper, 'orbitdb', {
+                    open: sandbox.stub().returns({
+                        type: '',
+                        ...orbitdb
+                    }),
+                    key: {
+                        getPublic: sandbox.stub().returns('fake-key')
+                    },
+                    create: sandbox.stub().resolves({
+                        address: {
+                            toString: sandbox.stub().returns('fake-address')
+                        }
+                    })
+                });
+                helper.req.getParam.withArgs('type').returns('keyvalue');
+                helper.req.getParam.withArgs('name').returns('fake-name');
+                helper.req.getParam.withArgs('properties').returns({props: 'fake-props'});
+
+                await run();
+
+                helper.orbitdb.create.should.have.been.calledWith('fake-name', 'keyvalue', {
+                    props: 'fake-props',
+                    write: [
+                        [
+                            'fake-key'
+                        ]
+                    ]
+                });
+            });
+
         });
 
         describe('log', function () {
