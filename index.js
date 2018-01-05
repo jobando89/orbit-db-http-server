@@ -11,7 +11,7 @@ const busboyBodyParcer = require('busboy-body-parser');
 const Logger = require('logplease');
 const logger = Logger.create('Main Application', {color: Logger.Colors.Yellow});
 
-Logger.setLogLevel('INFO');
+Logger.setLogLevel(get(config,'loglevel','INFO'));
 
 let orbitdb, ipfs ;
 

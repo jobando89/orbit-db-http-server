@@ -1,8 +1,8 @@
 const {get} = require('lodash');
 const guid = require('guid');
-const Logger = require('logplease')
-const logger = Logger.create(`Request:${guid.raw()}`, {color: Logger.Colors.Yellow})
-Logger.setLogLevel('DEBUG')
+const Logger = require('logplease');
+const logger = Logger.create(`Request:${guid.raw()}`, {color: Logger.Colors.Yellow});
+Logger.setLogLevel('DEBUG');
 
 class Wrapper {
     constructor(req, res) {
@@ -41,7 +41,7 @@ class Wrapper {
     get req() {
         const getParam = (name) => {
             return get(this._req, ['swagger', 'params', name, 'value']);
-        }
+        };
         const multihash = getParam('multihash');
         const name = getParam('name');
         const dbAddress = `/orbitdb/${multihash}/${name}`;
@@ -66,7 +66,7 @@ class Wrapper {
         reply.created = payload => reply(201, payload);
         reply.noContent = payload => reply(204, payload);
         reply.badRequest = payload => reply(400, payload);
-        reply.unauthorized = payload => func(401, payload);
+        reply.unauthorized = payload => reply(401, payload);
         reply.forbidden = payload => reply(403, payload);
         reply.notFound = payload => reply(404, payload);
         reply.internalServerError = payload => reply(500, payload);

@@ -6,7 +6,7 @@
   "scripts": {
     "test": "NODE_ENV=test mocha --reporter dot",
     "start": "node index.js",
-    "lint": "eslint api test index.js || true",
+    "lint": "eslint api test src index.js || true",
     "cover": "NODE_ENV=test istanbul cover _mocha"
   },
   "author": "",
