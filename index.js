@@ -74,10 +74,7 @@ async function loadSwaggerYaml(context) {
 function createServer(context) {
     logger.debug('Creating restify server');
     const server = restify.createServer(Object.assign(
-        pick(context.internal.definition, 'name', 'formatters'),
-        {
-            handleUncaughtExceptions: true
-        }
+        pick(context.internal.definition, 'name', 'formatters')
     ));
     server.on('uncaughtException', (req, res, route, err) => {
         logger.error({route, err}, 'An unhandled exception has occurred');

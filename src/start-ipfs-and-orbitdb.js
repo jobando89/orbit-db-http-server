@@ -31,8 +31,8 @@ const startIpfsAndOrbitDB = async (options = {}) => {
         });
         ipfs.on('error', reject);
         ipfs.on('ready', () => {
-            logger.debug('IPFS started');
-            logger.debug('Starting OrbitDB');
+            logger.info('IPFS started');
+            logger.info('Starting OrbitDB');
             const orbitdb = new OrbitDB(ipfs, options.orbitdbPath || defaultDataDir);
             resolve({orbitdb: orbitdb, ipfs: ipfs});
         });
