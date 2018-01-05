@@ -28,7 +28,7 @@ async function create() {
                 name: '',
                 version: '0.0',
                 appRoot: __dirname,
-                port: 37373
+                port: get(config, 'port',8080)
             },
         }
     };
