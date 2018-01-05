@@ -1,4 +1,8 @@
 const {get} = require('lodash');
+const guid = require('guid');
+const Logger = require('logplease')
+const logger = Logger.create(`Request:${guid.raw()}`, {color: Logger.Colors.Yellow})
+Logger.setLogLevel('DEBUG')
 
 class Wrapper {
     constructor(req, res) {
@@ -13,21 +17,22 @@ class Wrapper {
                 return await operation(wrapper);
             }
             catch (err) {
-                const message = get(err, 'message', 'Unknown error occurred');
-                let statusCode = get(err, 'statusCode', 500);
-                if(message.includes('doesn\'t exist')){
-                    return wrapper.reply.notFound(message);
-                }else if(message.includes('already exists')){
-                    return wrapper.reply.badRequest(message);
-                }else if(message.includes('If you want to create a database')){
-                    return wrapper.reply.notFound(message);
-                }
-                console.log(message, err);
                 try {
+                    const message = get(err, 'message', 'Unknown error occurred');
+                    let statusCode = get(err, 'statusCode', 500);
+                    if (message.includes('doesn\'t exist')) {
+                        return wrapper.reply.notFound(message);
+                    } else if (message.includes('already exists')) {
+                        return wrapper.reply.badRequest(message);
+                    } else if (message.includes('If you want to create a database')) {
+                        return wrapper.reply.notFound(message);
+                    }
+                    logger.error(message, err);
+
                     return wrapper.reply(statusCode, message);
                 }
                 catch (sendError) {
-                    console.log('Failed to send API response', sendError);
+                    logger.error('Failed to send API response', sendError);
                 }
             }
         };
@@ -68,6 +73,9 @@ class Wrapper {
         return reply;
     }
 
+    get logger(){
+        return logger;
+    }
 }
 
 

@@ -8,7 +8,10 @@ const config = require('config');
 const startIpfsAndOrbitDB = require('./src/start-ipfs-and-orbitdb');
 const bodyParser = require('body-parser');
 const busboyBodyParcer = require('busboy-body-parser');
+const Logger = require('logplease');
+const logger = Logger.create('Main Application', {color: Logger.Colors.Yellow});
 
+Logger.setLogLevel('INFO');
 
 let orbitdb, ipfs ;
 
@@ -39,14 +42,14 @@ async function create() {
         await registerTerminationHandler(terminate, terminateTimeout, result);
         start(result);
     } catch (err) {
-        console.log({err}, 'Service failed to start');
+        logger.error({err}, 'Service failed to start');
         process.exit(exitCode.startFailed);
     }
 }
 
 async function start(context) {
     const slimDefinition = pick(context.internal.definition, 'name', 'version', 'port');
-    console.log({definition: slimDefinition}, 'Starting API %s %s', slimDefinition.name, slimDefinition.version);
+    logger.info({definition: slimDefinition}, 'Starting API %s %s', slimDefinition.name, slimDefinition.version);
 
     const orbitServer = await startIpfsAndOrbitDB();
     orbitdb = orbitServer.orbitdb;
@@ -69,16 +72,15 @@ async function loadSwaggerYaml(context) {
 }
 
 function createServer(context) {
-    console.log('Creating restify server');
+    logger.debug('Creating restify server');
     const server = restify.createServer(Object.assign(
         pick(context.internal.definition, 'name', 'formatters'),
         {
-            //log: log.child({module: 'restify'}),
             handleUncaughtExceptions: true
         }
     ));
     server.on('uncaughtException', (req, res, route, err) => {
-        console.log({route, err}, 'An unhandled exception has occurred');
+        logger.error({route, err}, 'An unhandled exception has occurred');
         res.send(500, 'An internal error has occurred, see the api log for more details.');
     });
     server.use(useOrbitDB);
@@ -88,7 +90,7 @@ function createServer(context) {
 }
 
 async function swaggerize(context) {
-    console.log('Loading swagger definition');
+    logger.debug('Loading swagger definition');
     const create = Promise.promisify(swaggerRestify.create);
 
     const fittingsPath = path.resolve(`${__dirname}/fittings`);
@@ -112,22 +114,22 @@ async function swaggerize(context) {
         }
     );
     const swagger = await create(options);
-    console.log('Swagger definition loaded, registering routes with restify server');
+    logger.debug('Swagger definition loaded, registering routes with restify server');
     swagger.register(context.restify.server);
     set(context, ['swagger', 'server'], swagger);
 }
 
 async function listen(context) {
-    console.log('Starting restify server');
+    logger.info('Starting restify server');
     const port = context.internal.definition.port;
     const server = context.restify.server;
     const listen = Promise.promisify(server.listen, {context: server});
     await listen(port);
-    console.log(`API started, now listening on ${port}`);
+    logger.info(`API started, now listening on ${port}`);
 }
 
 async function terminate(context) {
-    console.log('Shutting down API');
+    logger.info('Shutting down API');
     await has(context, ['resources', 'settingsCache']) ? context.resources.settingsCache.close() : Promise.resolve();
     await orbitdb.disconnect();
     await ipfs.stop(() => {});
@@ -135,19 +137,19 @@ async function terminate(context) {
 
 
 
-    console.log('Clean shutdown successful');
+    logger.info('Clean shutdown successful');
 }
 
 async function registerTerminationHandler(terminate, timeout, res) {
     async function onSignal() {
-        console.log('Shutdown signalled, executing terminate function');
+        logger.info('Shutdown signalled, executing terminate function');
         Promise.race([
-            Promise.delay(timeout).then(() => console.log('Cleanup taking too long, forcing exit!')),
+            Promise.delay(timeout).then(() => logger.warn('Cleanup taking too long, forcing exit!')),
             async () => {
                 try {
                     await terminate(res);
                 } catch (err) {
-                    console.log({err}, 'An error occurred in terminate handler');
+                    logger.error({err}, 'An error occurred in terminate handler');
                 }
             }
         ]);
@@ -166,9 +168,9 @@ async function registerTerminationHandler(terminate, timeout, res) {
 function registerErrorHandler(callback = noop) {
 
     function unhandledError(err) {
-        console.log({err: err}, 'An unhandled error has occurred');
+        logger.error({err: err}, 'An unhandled error has occurred');
         return Promise.try(() => callback(err))
-            .catch(err => console.log({err}, 'Exception handler failed'))
+            .catch(err => logger.error({err}, 'Exception handler failed'))
             .finally(() => process.exit(exitCode.uncaughtError));
     }
 
