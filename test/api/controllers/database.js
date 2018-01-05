@@ -75,7 +75,7 @@ describe('controllers/database', function () {
                         ...orbitdb
                     })
                 });
-            })
+            });
 
             it('should call created', async function () {
                 await run();
@@ -109,7 +109,7 @@ describe('controllers/database', function () {
                         ...orbitdb
                     })
                 });
-            })
+            });
 
             it('should call created', async function () {
                 await run();
@@ -142,7 +142,7 @@ describe('controllers/database', function () {
                         ...orbitdb
                     })
                 });
-            })
+            });
 
             it('should call inc for counter', async function () {
 
@@ -200,7 +200,7 @@ describe('controllers/database', function () {
                     })
                 });
                 helper.req.getParam.withArgs('key').returns('fake-key');
-            })
+            });
 
             it('should call created', async function () {
                 await run();
