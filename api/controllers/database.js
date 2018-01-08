@@ -43,7 +43,7 @@ module.exports = {
         // Load the database
         await db.load();
 
-        validateDbType(db, ['log', 'feed', 'counter']);
+        validateDbType(db, ['eventlog', 'feed', 'counter']);
 
         let result;
         switch (db.type) {
@@ -92,7 +92,7 @@ module.exports = {
 
         await db.load();
 
-        validateDbType(db, ['log', 'feed', 'counter']);
+        validateDbType(db, ['eventlog', 'feed', 'counter']);
 
         let result;
         const dbType = db.type;
@@ -107,7 +107,7 @@ module.exports = {
                     result = await db.inc();
                 }
                 break;
-            case 'log':
+            case 'eventlog':
             case 'feed':
                 if (isStream) {
                     data = get(helper, 'req.files');
@@ -176,7 +176,7 @@ module.exports = {
 
         await db.load();
 
-        validateDbType(db, ['log', 'feed', 'keyvalue', 'docstore']);
+        validateDbType(db, ['eventlog', 'feed', 'keyvalue', 'docstore']);
 
         const event = db.get(key);
 

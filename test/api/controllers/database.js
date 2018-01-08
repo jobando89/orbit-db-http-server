@@ -104,7 +104,7 @@ describe('controllers/database', function () {
             beforeEach(function () {
                 set(helper, 'orbitdb', {
                     open: sandbox.stub().returns({
-                        type: 'log',
+                        type: 'eventlog',
                         ...orbitdb
                     })
                 });
@@ -280,9 +280,7 @@ describe('controllers/database', function () {
             helper.orbitdb.create.should.have.been.calledWith('fake-name', 'fake-datastore', {
                 props: 'fake-props',
                 write: [
-                    [
-                        'fake-key'
-                    ]
+                    'fake-key'
                 ]
             });
         });
