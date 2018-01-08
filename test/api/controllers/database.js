@@ -28,7 +28,6 @@ describe('controllers/database', function () {
             wrap: cb => () => cb(helper),
             req: apiWrapper.req,
             res: apiWrapper.res,
-            orbitdb: {},
             reply: apiWrapper.reply
         };
 
@@ -257,54 +256,59 @@ describe('controllers/database', function () {
             return controller.create();
         }
 
-        describe('keyvalue', function () {
-
-            it('should create a database with the parameters assigned', async function () {
-
-                set(helper, 'orbitdb', {
-                    open: sandbox.stub().returns({
-                        type: '',
-                        ...orbitdb
-                    }),
-                    key: {
-                        getPublic: sandbox.stub().returns('fake-key')
-                    },
-                    create: sandbox.stub().resolves({
-                        address: {
-                            toString: sandbox.stub().returns('fake-address')
-                        }
-                    })
-                });
-                helper.req.getParam.withArgs('type').returns('keyvalue');
-                helper.req.getParam.withArgs('name').returns('fake-name');
-                helper.req.getParam.withArgs('properties').returns({props: 'fake-props'});
-
-                await run();
-
-                helper.orbitdb.create.should.have.been.calledWith('fake-name', 'keyvalue', {
-                    props: 'fake-props',
-                    write: [
-                        [
-                            'fake-key'
-                        ]
-                    ]
-                });
+        it('should create a database with the parameters assigned', async function () {
+            set(helper, 'orbitdb', {
+                open: sandbox.stub().returns({
+                    type: '',
+                    ...orbitdb
+                }),
+                key: {
+                    getPublic: sandbox.stub().returns('fake-key')
+                },
+                create: sandbox.stub().resolves({
+                    address: {
+                        toString: sandbox.stub().returns('fake-address')
+                    }
+                })
             });
+            helper.req.getParam.withArgs('type').returns('fake-datastore');
+            helper.req.getParam.withArgs('name').returns('fake-name');
+            helper.req.getParam.withArgs('properties').returns({props: 'fake-props'});
 
+            await run();
+
+            helper.orbitdb.create.should.have.been.calledWith('fake-name', 'fake-datastore', {
+                props: 'fake-props',
+                write: [
+                    [
+                        'fake-key'
+                    ]
+                ]
+            });
         });
 
-        describe('log', function () {
-        });
+        it('should create a database db address', async function () {
+            set(helper, 'orbitdb', {
+                open: sandbox.stub().returns({
+                    type: '',
+                    ...orbitdb
+                }),
+                key: {
+                    getPublic: sandbox.stub().returns('fake-key')
+                },
+                create: sandbox.stub().resolves({
+                    address: {
+                        toString: sandbox.stub().returns('fake-address')
+                    }
+                })
+            });
+            helper.req.getParam.withArgs('name').returns('fake-name');
+            helper.req.getParam.withArgs('type').returns();
 
-        describe('feed', function () {
-        });
+            await run();
 
-        describe('docs', function () {
+            helper.orbitdb.create.should.have.been.calledWith('fake-name');
         });
-
-        describe('counter', function () {
-        });
-
     });
 
     describe('get', function () {

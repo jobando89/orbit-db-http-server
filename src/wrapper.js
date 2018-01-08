@@ -26,6 +26,8 @@ class Wrapper {
                         return wrapper.reply.badRequest(message);
                     } else if (message.includes('If you want to create a database')) {
                         return wrapper.reply.notFound(message);
+                    } else if (message.includes('Not allowed to write')){
+                        return wrapper.reply.forbidden(message);
                     }
                     logger.error(message, err);
 

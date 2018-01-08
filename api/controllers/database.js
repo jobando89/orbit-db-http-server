@@ -67,7 +67,7 @@ module.exports = {
 
         let dbProps = {//TODO handle case where creation of db does not include self
             ...properties ? properties : {},
-            write: [get(properties, 'write', [helper.orbitdb.key.getPublic('hex')])]
+            write: get(properties, 'write', [helper.orbitdb.key.getPublic('hex')])
         };
 
         // Create the database

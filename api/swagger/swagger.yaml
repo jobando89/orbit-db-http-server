@@ -121,7 +121,6 @@ paths:
         type: string
         required: true
         in: path
-
     get:
       tags:
         - Get
@@ -134,7 +133,6 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/error"
-
     delete:
       tags:
         - Delete
@@ -149,7 +147,6 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/error"
-
     post:
       tags:
         - Add
