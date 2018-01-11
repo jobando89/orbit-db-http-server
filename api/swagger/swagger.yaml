@@ -48,6 +48,12 @@ paths:
       summary: Gets iterators or value for OrbitDB data stores of type Log, Feed and Counter
       operationId: get
       parameters:
+        - name: live
+          description: TODO Get Description
+          type: boolean
+          in: query
+          required: false
+          default: false
         - name: gt
           description: Greater than
           type: string
@@ -126,6 +132,13 @@ paths:
         - Get
       summary: Gets value for hash or key of data stores of type KeyValue, Log, Docs and Feed
       operationId: getByKey
+      parameters:
+        - name: live
+          description: TODO Get Description
+          type: boolean
+          in: query
+          required: false
+          default: false
       responses:
         204:
           description: Success

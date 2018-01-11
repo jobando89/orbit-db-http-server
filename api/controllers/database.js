@@ -16,6 +16,7 @@ module.exports = {
     get: Wrapper.wrap(async helper => {
 
         const address = helper.req.dbAddress;
+        const shouldStream = helper.req.getParam('live');
 
         //Setting up options
         const gt = helper.req.getParam('gt');
@@ -37,7 +38,7 @@ module.exports = {
         const db = await helper.orbitdb.open(address, {
             create: false,
             sync: true,
-            //localOnly: !shouldStream, TODO WHAT IS THIS?
+            localOnly: !shouldStream,
         });
 
         // Load the database
@@ -166,7 +167,7 @@ module.exports = {
     getByKey: Wrapper.wrap(async helper => {
         const key = helper.req.getParam('key');
         const address = helper.req.dbAddress;
-        const shouldStream = get(helper, 'req.query.live', false);
+        const shouldStream = helper.req.getParam('live');
 
         const db = await helper.orbitdb.open(address, {
             create: false,
