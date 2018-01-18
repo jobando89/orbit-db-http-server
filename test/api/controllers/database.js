@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
-const Wrapper = require(`${__BASE}/src/wrapper`);
+const Wrapper = require('tortilla-api').wrapper;
 const {set} = require('lodash');
 
 describe('controllers/database', function () {
@@ -44,7 +44,7 @@ describe('controllers/database', function () {
 
         function run() {
             const controller = proxyquire(`${__BASE}/api/controllers/database`, {
-                '../../src/wrapper': helper
+                'tortilla-api': {wrapper:helper}
             });
             return controller.add();
         }
@@ -168,7 +168,7 @@ describe('controllers/database', function () {
 
         function run() {
             const controller = proxyquire(`${__BASE}/api/controllers/database`, {
-                '../../src/wrapper': helper
+                'tortilla-api': {wrapper:helper}
             });
             return controller.addKeyValue();
         }
@@ -251,7 +251,7 @@ describe('controllers/database', function () {
 
         function run() {
             const controller = proxyquire(`${__BASE}/api/controllers/database`, {
-                '../../src/wrapper': helper
+                'tortilla-api': {wrapper:helper}
             });
             return controller.create();
         }
@@ -313,7 +313,7 @@ describe('controllers/database', function () {
 
         function run() {
             const controller = proxyquire(`${__BASE}/api/controllers/database`, {
-                '../../src/wrapper': helper
+                'tortilla-api': {wrapper:helper}
             });
             return controller.get();
         }
@@ -379,7 +379,7 @@ describe('controllers/database', function () {
 
         function run() {
             const controller = proxyquire(`${__BASE}/api/controllers/database`, {
-                '../../src/wrapper': helper
+                'tortilla-api': {wrapper:helper}
             });
             return controller.getByKey();
         }

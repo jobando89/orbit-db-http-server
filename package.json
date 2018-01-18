@@ -21,27 +21,15 @@
     "sinon": "^4.1.2",
     "sinon-chai": "^2.10.0",
     "supertest": "^3.0.0",
-    "supertest-as-promised": "^4.0.2",
-    "watch-cli": "^0.2.1"
+    "supertest-as-promised": "^4.0.2"
   },
   "dependencies": {
-    "async": "^2.6.0",
-    "bagpipe": "^0.3.5",
-    "bluebird": "^3.5.1",
-    "body-parser": "^1.18.2",
-    "busboy-body-parser": "^0.3.1",
     "config": "^1.29.0",
-    "express": "^4.16.2",
-    "guid": "0.0.12",
     "ipfs": "^0.27.5",
     "lodash": "^4.17.4",
     "logplease": "^1.2.14",
     "orbit-db": "^0.18.12",
     "path": "^0.12.7",
-    "restify": "^6.3.4",
-    "stoppable": "^1.0.4",
-    "swagger-parser": "^4.0.1",
-    "swagger-restify-mw": "^0.7.0",
-    "watch-cli": "^0.2.3"
+    "tortilla-api": "^0.1.0"
   }
 }

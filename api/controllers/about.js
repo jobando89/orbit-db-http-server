@@ -1,8 +1,11 @@
-const Wrapper = require('../../src/wrapper');
-
+const Wrapper = require('tortilla-api').wrapper;
+const packageJson = require('../../package.json');
 
 module.exports={
     get : Wrapper.wrap(async helper => {
-        return helper.res.send(200, {a:'a'});
+        return helper.reply.ok({
+            Version:packageJson.version,
+            App: packageJson.name
+        });
     })
 };

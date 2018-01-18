@@ -1,5 +1,5 @@
 //TODO how to add query for docs on get
-const Wrapper = require('../../src/wrapper');
+const Wrapper = require('tortilla-api').wrapper;
 const {get} = require('lodash');
 
 const validateDbType = (db, acceptedTypes) => {
@@ -15,7 +15,7 @@ module.exports = {
 
     get: Wrapper.wrap(async helper => {
 
-        const address = helper.req.dbAddress;
+        const address = helper.dbAddress;
         const shouldStream = helper.req.getParam('live');
 
         //Setting up options
@@ -83,7 +83,7 @@ module.exports = {
     }),
 
     add: Wrapper.wrap(async helper => {
-        const address = helper.req.dbAddress;
+        const address = helper.dbAddress;
         const isStream = helper.req.headers['content-type'] !== 'application/json';
 
         const db = await helper.orbitdb.open(address, {
@@ -127,7 +127,7 @@ module.exports = {
     addKeyValue: Wrapper.wrap(async helper => {
 
         const key = helper.req.getParam('key');
-        const address = helper.req.dbAddress;
+        const address = helper.dbAddress;
 
         const isStream = helper.req.headers['content-type'] !== 'application/json';
         let data;
@@ -166,7 +166,7 @@ module.exports = {
 
     getByKey: Wrapper.wrap(async helper => {
         const key = helper.req.getParam('key');
-        const address = helper.req.dbAddress;
+        const address = helper.dbAddress;
         const shouldStream = helper.req.getParam('live');
 
         const db = await helper.orbitdb.open(address, {
@@ -187,7 +187,7 @@ module.exports = {
     deleteKeyValue: Wrapper.wrap(async helper => {
 
         const key = helper.req.getParam('key');
-        const address = helper.req.dbAddress;
+        const address = helper.dbAddress;
 
         const db = await helper.orbitdb.open(address, {
             create: false,
