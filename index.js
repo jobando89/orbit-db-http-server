@@ -1,5 +1,5 @@
-const Logger = require('logplease');
-const logger = Logger.create('orbit-db-http-server', {color: Logger.Colors.Yellow});
+const {get, noop} = require('lodash');
+const config = require('config');
 const tortilla = require('tortilla-api');
 const startIpfsAndOrbitDB = require('./src/start-ipfs-and-orbitdb');
 let orbitdb, ipfs;
@@ -12,21 +12,45 @@ async function onServerStart() {
 }
 
 async function onTerminate() {
-    logger.info('Terminating OrbitDb');
+    get(orbitdb, 'logger.info', noop)('Terminating OrbitDb');
     await orbitdb.disconnect();
     await ipfs.stop(() => {
     });
 }
 
 const useOrbitDB = (req, res, next) => {
-    req.orbitdb = orbitdb;
+    const logger = req.logger;
+    req.orbitdb = {
+        ...orbitdb,
+        open: function (address, options) {
+            return orbitdb.open(address, {logger, ...options});
+        },
+        create: function (name, type, options) {
+            return orbitdb.open(name, type, {logger, ...options});
+        }
+    };
     next();
+};
+
+
+const serverLogger = () => {
+    const Logger = require('logplease');
+    const logger = Logger.create('orbit-db-http-server', {color: Logger.Colors.Yellow});
+    Logger.setLogLevel(get(config, 'loglevel', 'INFO'));
+    return logger;
 };
 
 
 tortilla.create(
     {
         appRoot: __dirname,
+        logger: () => {
+            const guid = require('guid');
+            const logplease = require('logplease');
+            logplease.setLogLevel(get(config, 'loglevel', 'INFO'));
+            const defaultLogger = logplease.create(`Request:${guid.raw()}`, {color: logplease.Colors['Magenta']});
+            return defaultLogger;
+        }
     },
     {
         onServerStart,
@@ -45,19 +69,20 @@ tortilla.create(
                 dbAddress
             };
         },
-        errorHandler:(statusCode, message,reply)=>{
+        errorHandler: (statusCode, message, reply) => {
             if (message.includes('doesn\'t exist')) {
                 return reply.notFound(message);
             } else if (message.includes('already exists')) {
                 return reply.badRequest(message);
             } else if (message.includes('If you want to create a database')) {
                 return reply.notFound(message);
-            } else if (message.includes('Not allowed to write')){
+            } else if (message.includes('Not allowed to write')) {
                 return reply.forbidden(message);
             }
-            return reply(statusCode,message);
+            return reply(statusCode, message);
         }
-    }
+    },
+    serverLogger()
 );
 
 

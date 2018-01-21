@@ -25,11 +25,12 @@
   },
   "dependencies": {
     "config": "^1.29.0",
+    "guid": "0.0.12",
     "ipfs": "^0.27.5",
     "lodash": "^4.17.4",
-    "logplease": "^1.2.14",
-    "orbit-db": "^0.18.12",
+    "logplease": "github:jobando89/logplease#jaodev",
+    "orbit-db": "github:jobando89/orbit-db#jaodev",
     "path": "^0.12.7",
-    "tortilla-api": "^0.1.0"
+    "tortilla-api": "github:jobando89/tortilla-api#logdev"
   }
 }

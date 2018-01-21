@@ -7,11 +7,12 @@ const logger = Logger.create('orbit-db-http-server', {color: Logger.Colors.Yello
 const config = require('config');
 Logger.setLogLevel(get(config,'loglevel','INFO'));
 
-const defaultDataDir = './orbitdb';
 
 const startIpfsAndOrbitDB = async (options = {}) => {
+    const defaultDataDir = './orbitdb';
     logger.debug('IPFS path:', get(options, 'ipfsPath'));
     logger.debug('OrbitDB path:', get(options, 'orbitdbPath'));
+    const swarm = get(config,'swarm.items',[]);
     return new Promise((resolve, reject) => {
         logger.debug('Starting IPFS');
         const ipfs = new IPFS({
@@ -22,10 +23,7 @@ const startIpfsAndOrbitDB = async (options = {}) => {
             },
             config: {
                 Addresses: {
-                    Swarm: [
-                        '/ip4/0.0.0.0/tcp/0',
-                        // '/dns4/star-signal.cloud.ipfs.team/wss/p2p-webrtc-star',
-                    ],
+                    Swarm:swarm,
                 },
             },
         });
@@ -33,7 +31,7 @@ const startIpfsAndOrbitDB = async (options = {}) => {
         ipfs.on('ready', () => {
             logger.info('IPFS started');
             logger.info('Starting OrbitDB');
-            const orbitdb = new OrbitDB(ipfs, options.orbitdbPath || defaultDataDir);
+            const orbitdb = new OrbitDB(ipfs, defaultDataDir, options);
             resolve({orbitdb: orbitdb, ipfs: ipfs});
         });
     });

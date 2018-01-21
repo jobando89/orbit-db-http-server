@@ -1,6 +1,6 @@
 //TODO how to add query for docs on get
 const Wrapper = require('tortilla-api').wrapper;
-const {get} = require('lodash');
+const {get, keys, isNil} = require('lodash');
 
 const validateDbType = (db, acceptedTypes) => {
     const dbType = db.type;
@@ -73,10 +73,14 @@ module.exports = {
 
         // Create the database
         let db;
-        if(type){
+        if (type) {
             db = await helper.orbitdb.create(name, type, dbProps);
-        }else{ //Case when a replication is needed
-            db = await helper.orbitdb.create(name);
+        } else { //Case when a replication is needed
+            db = await helper.orbitdb.open(name, {
+                localOnly: false,
+                create: true,
+                ...dbProps
+            });
         }
 
         return helper.reply.created(db.address.toString());
@@ -84,7 +88,8 @@ module.exports = {
 
     add: Wrapper.wrap(async helper => {
         const address = helper.dbAddress;
-        const isStream = helper.req.headers['content-type'] !== 'application/json';
+        const contentType = helper.req.headers['content-type'];
+        const isStream = contentType !== 'application/json';
 
         const db = await helper.orbitdb.open(address, {
             create: false,
@@ -93,14 +98,26 @@ module.exports = {
 
         await db.load();
 
-        validateDbType(db, ['eventlog', 'feed', 'counter']);
+        validateDbType(db, ['eventlog', 'feed', 'counter', 'keyvalue']);
 
         let result;
         const dbType = db.type;
         let data;
         const value = helper.req.getParam('value');
         switch (dbType) {
-            case 'counter':
+            case 'keyvalue': {
+                if (!contentType.includes('multipart/form')) {
+                    throw new Error('Not a valid db type for method');
+                }
+                data = get(helper, 'req.files');
+                let filename = get(data, 'document.name');
+                if (isNil(filename)) {
+                    throw new Error('Not a valid db type for method');
+                }
+                result = await db.put(filename, get(data, 'document'));
+                break;
+            }
+            case 'counter': {
                 if (value) {
                     result = await db.inc(value);
 
@@ -108,8 +125,9 @@ module.exports = {
                     result = await db.inc();
                 }
                 break;
+            }
             case 'eventlog':
-            case 'feed':
+            case 'feed': {
                 if (isStream) {
                     data = get(helper, 'req.files');
                 } else {
@@ -118,6 +136,9 @@ module.exports = {
                 if (!data)
                     throw new Error('Database entry was undefined');
                 result = await db.add(data);
+                break;
+            }
+
         }
 
 
@@ -181,6 +202,15 @@ module.exports = {
 
         const event = db.get(key);
 
+        if (get(event, 'data.type') === 'Buffer') {
+            const document = new Buffer(event.data);
+            helper.res.setHeader(
+                'Content-Type', event.mimetype
+            );
+            helper.res.end(document);
+            return ;
+        }
+
         helper.reply.ok(event);
     }),
 
@@ -211,4 +241,9 @@ module.exports = {
 
         return helper.reply.ok();
     }),
+
+    getStoress: Wrapper.wrap(async helper => {
+        const stores = helper.orbitdb.stores;
+        return helper.reply.ok(keys(stores));
+    })
 };
