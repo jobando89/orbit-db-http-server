@@ -67,7 +67,7 @@ module.exports = {
         const properties = helper.req.getParam('properties');
 
         let dbProps = {//TODO handle case where creation of db does not include self
-            ...properties ? properties : {},
+            ...properties,
             write: get(properties, 'write', [helper.orbitdb.key.getPublic('hex')])
         };
 

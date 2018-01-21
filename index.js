@@ -1,7 +1,10 @@
 const {get, noop} = require('lodash');
-const config = require('config');
 const tortilla = require('tortilla-api');
 const startIpfsAndOrbitDB = require('./src/start-ipfs-and-orbitdb');
+const Logger = require('logplease');
+const config = require('config');
+Logger.setLogLevel(get(config,'loglevel','INFO'));
+
 let orbitdb, ipfs;
 
 
@@ -26,7 +29,7 @@ const useOrbitDB = (req, res, next) => {
             return orbitdb.open(address, {logger, ...options});
         },
         create: function (name, type, options) {
-            return orbitdb.open(name, type, {logger, ...options});
+            return orbitdb.create(name, type, {logger, ...options});
         }
     };
     next();
@@ -34,9 +37,8 @@ const useOrbitDB = (req, res, next) => {
 
 
 const serverLogger = () => {
-    const Logger = require('logplease');
+
     const logger = Logger.create('orbit-db-http-server', {color: Logger.Colors.Yellow});
-    Logger.setLogLevel(get(config, 'loglevel', 'INFO'));
     return logger;
 };
 
@@ -47,7 +49,6 @@ tortilla.create(
         logger: () => {
             const guid = require('guid');
             const logplease = require('logplease');
-            logplease.setLogLevel(get(config, 'loglevel', 'INFO'));
             const defaultLogger = logplease.create(`Request:${guid.raw()}`, {color: logplease.Colors['Magenta']});
             return defaultLogger;
         }

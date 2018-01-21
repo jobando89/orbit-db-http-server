@@ -5,7 +5,6 @@ const {get} = require('lodash');
 const Logger = require('logplease');
 const logger = Logger.create('orbit-db-http-server', {color: Logger.Colors.Yellow});
 const config = require('config');
-Logger.setLogLevel(get(config,'loglevel','INFO'));
 
 
 const startIpfsAndOrbitDB = async (options = {}) => {
@@ -13,11 +12,13 @@ const startIpfsAndOrbitDB = async (options = {}) => {
     logger.debug('IPFS path:', get(options, 'ipfsPath'));
     logger.debug('OrbitDB path:', get(options, 'orbitdbPath'));
     const swarm = get(config,'swarm.items',[]);
+    const repo = options.ipfsPath || path.join(defaultDataDir, '/ipfs');
+
     return new Promise((resolve, reject) => {
         logger.debug('Starting IPFS');
         const ipfs = new IPFS({
             start: true,
-            repo: options.ipfsPath || path.join(defaultDataDir, '/ipfs'),
+            repo,
             EXPERIMENTAL: {
                 pubsub: true,
             },
