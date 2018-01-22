@@ -270,7 +270,10 @@ describe('controllers/database', function () {
             set(helper, 'orbitdb', {
                 open: sandbox.stub().returns({
                     type: '',
-                    ...orbitdb
+                    ...orbitdb,
+                    address:{
+                        toString: sandbox.stub().returns('fake-address')
+                    }
                 }),
                 key: {
                     getPublic: sandbox.stub().returns('fake-key')
@@ -286,7 +289,7 @@ describe('controllers/database', function () {
 
             await run();
 
-            helper.orbitdb.create.should.have.been.calledWith('fake-name');
+            helper.orbitdb.open.should.have.been.calledWith('fake-name');
         });
 
         it('should create a database without properties', async function () {
