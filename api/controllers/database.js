@@ -1,6 +1,6 @@
 //TODO how to add query for docs on get
 const Wrapper = require('tortilla-api').wrapper;
-const {get, keys, isNil} = require('lodash');
+const {get, isNil} = require('lodash');
 
 const validateDbType = (db, acceptedTypes) => {
     const dbType = db.type;
@@ -201,14 +201,34 @@ module.exports = {
         validateDbType(db, ['eventlog', 'feed', 'keyvalue', 'docstore']);
 
         const event = db.get(key);
+        switch (db.type) {
+            case 'keyvalue': {
+                if (get(event, 'data.type') === 'Buffer') {
+                    const document = new Buffer(event.data);
+                    helper.res.setHeader(
+                        'Content-Type', event.mimetype
+                    );
+                    helper.res.end(document);
+                    return;
+                }
+                break;
+            }
+            case 'eventlog': {
+                const isBuffer = get(event, 'payload.value.document.data.type') === 'Buffer';
+                if (isBuffer) {
+                    const document = get(event, 'payload.value.document');
+                    const buffer = new Buffer(document.data);
+                    helper.res.setHeader('Content-Type', document.mimetype);
+                    helper.res.setHeader('db-type', db.type)
+                    helper.res.setHeader('hash', event.hash)
+                    helper.res.setHeader('id', event.id)
+                    helper.res.setHeader('sig', event.sig);
+                    helper.res.setHeader('key', event.key);
 
-        if (get(event, 'data.type') === 'Buffer') {
-            const document = new Buffer(event.data);
-            helper.res.setHeader(
-                'Content-Type', event.mimetype
-            );
-            helper.res.end(document);
-            return ;
+                    helper.res.end(buffer);
+                    return;
+                }
+            }
         }
 
         helper.reply.ok(event);
@@ -240,10 +260,5 @@ module.exports = {
         }
 
         return helper.reply.ok();
-    }),
-
-    getStoress: Wrapper.wrap(async helper => {
-        const stores = helper.orbitdb.stores;
-        return helper.reply.ok(keys(stores));
     })
 };

@@ -3,7 +3,7 @@ const tortilla = require('tortilla-api');
 const startIpfsAndOrbitDB = require('./src/start-ipfs-and-orbitdb');
 const Logger = require('logplease');
 const config = require('config');
-Logger.setLogLevel(get(config,'loglevel','INFO'));
+Logger.setLogLevel(get(config, 'loglevel', 'INFO'));
 
 let orbitdb, ipfs;
 
@@ -21,6 +21,14 @@ async function onTerminate() {
     });
 }
 
+const controllerLogger = (req, res, next) => {
+    const guid = require('guid');
+    const logplease = require('logplease');
+    const defaultLogger = logplease.create(`Request:${guid.raw()}`, {color: logplease.Colors['Magenta']});
+    req.logger = defaultLogger
+    next();
+}
+
 const useOrbitDB = (req, res, next) => {
     const logger = req.logger;
     req.orbitdb = {
@@ -36,31 +44,25 @@ const useOrbitDB = (req, res, next) => {
 };
 
 
-const serverLogger = () => {
-
+const serverLogger = (() => {
     const logger = Logger.create('orbit-db-http-server', {color: Logger.Colors.Yellow});
     return logger;
-};
+})();
 
 
-tortilla.create(
-    {
+tortilla.create({
+    definition: {
         appRoot: __dirname,
-        logger: () => {
-            const guid = require('guid');
-            const logplease = require('logplease');
-            const defaultLogger = logplease.create(`Request:${guid.raw()}`, {color: logplease.Colors['Magenta']});
-            return defaultLogger;
-        }
     },
-    {
+    events: {
         onServerStart,
         onTerminate,
         middleware: [
+            controllerLogger,
             useOrbitDB
         ]
     },
-    {
+    wrapper: {
         props: (req) => {
             const multihash = req.getParam('multihash');
             const name = req.getParam('name');
@@ -83,7 +85,7 @@ tortilla.create(
             return reply(statusCode, message);
         }
     },
-    serverLogger()
-);
+    serverLogger: serverLogger
+});
 
 
