@@ -7,14 +7,15 @@ module.exports = {
     extends: 'eslint:recommended',
     rules: {
         'max-len': ['error', 150, 4],
-        indent: ['error', 4, { SwitchCase: 1 }],
+        indent: ['error', 4, {SwitchCase: 1}],
         'linebreak-style': ['error', 'unix'],
         quotes: ['error', 'single'],
-        semi: ['error', 'always']
+        semi: ['error', 'always'],
+        curly: 'error'
     },
     parserOptions: {
         ecmaVersion: '2017',
-        ecmaFeatures:{
+        ecmaFeatures: {
             experimentalObjectRestSpread: true
         }
     }

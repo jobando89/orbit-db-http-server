@@ -1,14 +1,16 @@
 //TODO how to add query for docs on get
 const Wrapper = require('tortilla-api').wrapper;
-const {get, isNil} = require('lodash');
+const {get, isNil, isArray, isString} = require('lodash');
+const jsonQuery = require('json-query')
 
 const validateDbType = (db, acceptedTypes) => {
     const dbType = db.type;
     const validate = acceptedTypes.reduce((accumulator, currentValue) => {
         return accumulator || currentValue === dbType;
     }, false);
-    if (!validate)
+    if (!validate) {
         throw new Error('Not a valid db type for method');
+    }
 };
 
 module.exports = {
@@ -44,13 +46,23 @@ module.exports = {
         // Load the database
         await db.load();
 
-        validateDbType(db, ['eventlog', 'feed', 'counter']);
+        validateDbType(db, ['eventlog', 'feed', 'counter', 'docstore']);
 
         let result;
         switch (db.type) {
-            case 'counter':
+            case 'counter': {
                 result = db.value;
                 break;
+            }
+            case 'docstore': { //this is the query method in docstore
+                const query = helper.req.getParam('query');//Validate in swagger
+                const data = Object.keys(db._index._index)
+                    .map((e) => db._index.get(e));
+                result = get(jsonQuery(query, { //https://www.npmjs.com/package/json-query
+                    data
+                }), 'value', undefined);
+                break;
+            }
             default:
                 result = db.iterator(iteratorOptions).collect();
                 break;
@@ -60,7 +72,7 @@ module.exports = {
         return helper.reply.ok(result);
     }),
 
-    create: Wrapper.wrap(async helper => {
+    create: Wrapper.wrap(async helper => { //Create a database of any type
         // Get the name and type from the request as well as any properties needed to instantiate the db
         const type = helper.req.getParam('type');
         const name = helper.req.getParam('name');
@@ -98,7 +110,7 @@ module.exports = {
 
         await db.load();
 
-        validateDbType(db, ['eventlog', 'feed', 'counter', 'keyvalue']);
+        validateDbType(db, ['eventlog', 'feed', 'counter', 'keyvalue', 'docstore']);
 
         let result;
         const dbType = db.type;
@@ -133,18 +145,33 @@ module.exports = {
                 } else {
                     data = helper.req.body;
                 }
-                if (!data)
+                if (!data) {
                     throw new Error('Database entry was undefined');
+                }
                 result = await db.add(data);
                 break;
             }
-
+            case 'docstore': {
+                data = get(helper, 'req.body');
+                if (isArray(data)) {
+                    data.forEach((doc) => {
+                        if (!doc[db.options.indexBy]) {
+                            throw new Error(`The provided document doesn't contain field '${db.options.indexBy}'`);
+                        }
+                    })
+                    await data.batchPut(data);
+                    break;
+                }
+                result = await db.put(data);
+                break;
+            }
         }
 
 
         return helper.reply.created(result);
     }),
 
+    //TODO: can add to docstore when there is a key. get the index of the docstore from the options db.options.index and set the key to that. can add media that way!!!
     addKeyValue: Wrapper.wrap(async helper => {
 
         const key = helper.req.getParam('key');
@@ -167,17 +194,19 @@ module.exports = {
         // Load the database
         await db.load();
 
-        validateDbType(db, ['keyvalue', 'docstore']);
+        validateDbType(db, [
+            'keyvalue',
+            //'docstore'
+        ]);
 
         let result;
         const dbType = db.type;
         switch (dbType) {
+            /*
             case 'docstore':
-                result = await db.put({
-                    _id: key,
-                    ...data
-                });
+                result = await db.put();
                 break;
+                */
             case 'keyvalue':
                 result = await db.put(key, data);
                 break;
@@ -187,6 +216,7 @@ module.exports = {
 
     getByKey: Wrapper.wrap(async helper => {
         const key = helper.req.getParam('key');
+        const caseSensitive = helper.req.getParam('caseSensitive');
         const address = helper.dbAddress;
         const shouldStream = helper.req.getParam('live');
 
@@ -200,8 +230,12 @@ module.exports = {
 
         validateDbType(db, ['eventlog', 'feed', 'keyvalue', 'docstore']);
 
-        const event = db.get(key);
+        const event = db.get(key, caseSensitive);
         switch (db.type) {
+            case 'docstore': {
+
+                break;
+            }
             case 'keyvalue': {
                 if (get(event, 'data.type') === 'Buffer') {
                     const document = new Buffer(event.data);
