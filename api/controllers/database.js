@@ -73,8 +73,8 @@ module.exports = {
     }),
 
     create: Wrapper.wrap(async helper => { //Create a database of any type
-        // Get the name and type from the request as well as any properties needed to instantiate the db
-        const type = helper.req.getParam('type');
+
+        const type = helper.req.getParam('type'); // Get the name and type from the request as well as any properties needed to instantiate the db
         const name = helper.req.getParam('name');
         const properties = helper.req.getParam('properties');
 
@@ -171,7 +171,8 @@ module.exports = {
         return helper.reply.created(result);
     }),
 
-    //TODO: can add to docstore when there is a key. get the index of the docstore from the options db.options.index and set the key to that. can add media that way!!!
+    //TODO: can add to docstore when there is a key. get the index of the docstore
+    //TODO: from the options db.options.index and set the key to that. can add media that way!!!
     addKeyValue: Wrapper.wrap(async helper => {
 
         const key = helper.req.getParam('key');
@@ -196,20 +197,23 @@ module.exports = {
 
         validateDbType(db, [
             'keyvalue',
-            //'docstore'
+            // 'docstore'
         ]);
 
         let result;
         const dbType = db.type;
         switch (dbType) {
-            /*
-            case 'docstore':
-                result = await db.put();
-                break;
-                */
-            case 'keyvalue':
+            /* case 'docstore':
+               result = await db.put({
+                    [db.options.index]:key,
+                    data
+                });
+                break;*/
+            case 'keyvalue': {
                 result = await db.put(key, data);
                 break;
+            }
+
         }
         return helper.reply.created(result);
     }),

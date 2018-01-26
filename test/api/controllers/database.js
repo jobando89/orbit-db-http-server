@@ -662,60 +662,6 @@ describe('controllers/database', function () {
             });
 
         });
-
-        describe('docstore', function () {
-
-            beforeEach(function () {
-
-                const apiWrapper = new Wrapper();
-
-                orbitdb = {
-                    load: sandbox.stub().resolves(),
-                    add: sandbox.stub().resolves('fake-result'),
-                    inc: sandbox.stub().resolves('fake-result'),
-                    set: sandbox.stub().returns('fake-result'),
-                    put: sandbox.stub().returns('fake-result'),
-                };
-
-                helper = {
-                    wrap: cb => () => cb(helper),
-                    req: apiWrapper.req,
-                    res: apiWrapper.res,
-                    reply: apiWrapper.reply
-                };
-
-                set(helper.req, 'headers', {'content-type': 'fake-param'});
-                set(helper.req, 'files', 'fake-files-result');
-                set(helper.req, 'body', sandbox.stub().returns('fake-body-result'));
-                set(helper.req, 'getParam', sandbox.stub().returns('fake-result'));
-                set(helper.reply, 'created', sandbox.stub().returns());
-
-                set(helper, 'orbitdb', {
-                    open: sandbox.stub().returns({
-                        type: 'docstore',
-                        ...orbitdb
-                    })
-                });
-                helper.req.getParam.withArgs('key').returns('fake-key');
-                helper.req.files = {value: 'fake-body-result'};
-            });
-
-            it('should call created', async function () {
-                await run();
-
-                helper.reply.created.should.have.been.calledWith('fake-result');
-            });
-
-            it('should call put for a stream', async function () {
-                await run();
-
-                orbitdb.put.should.have.been.calledWith({
-                    _id: 'fake-key',
-                    value: 'fake-body-result'
-                });
-            });
-
-        });
     });
 
     describe('getByKey', function () {
